@@ -74,7 +74,7 @@ get_risk
 func_obj_3_trans_cost
 
 --------------------
-trans_cost:
+get_trans_cost:
 
   process the transaction cost
         

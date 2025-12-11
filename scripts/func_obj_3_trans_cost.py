@@ -6,7 +6,7 @@
 """
 DEFAULT_PROP_COST = 0.005
 
-def trans_cost(weights_t, weights_t_p_1, prop_cost = DEFAULT_PROP_COST, trace = False):
+def get_trans_cost(weights_t, weights_t_p_1, prop_cost = DEFAULT_PROP_COST, trace = False):
     """
         process the transaction cost
         
