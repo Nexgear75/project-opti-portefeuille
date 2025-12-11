@@ -1,0 +1,56 @@
+
+Multi-criteria optimisation project
+Fougeroux Alex & Robert Paul-Aimé
+
+======================
+main.py
+
+
+======================
+get_data.py
+
+--------------------
+get_df:
+  extract the data from the csv files in the data dir
+
+  input:
+    (String): file_name
+    (Bool): trace : feedback of failure or success
+  output:
+    (pandas: data frame): file_df
+
+  used in:
+    get_data.get_all_df
+
+
+--------------------
+get_all_df:
+
+  extract all the data from csv files in the data dir
+        
+  input:
+    (list[String]): file_names
+    (Bool): trace : feedback of failure or success
+  output:
+    (list[pandas: data frame]): file_df_list
+
+  used in:
+
+
+======================
+transaction_cost
+
+--------------------
+transaction_cost:
+
+  process the transaction cost
+        
+  input:
+    (list[float]): weights_t: previous weights repartion
+    (list[float]): weights_t_p_1: next increment weights repartion
+    float: prop_cost
+
+  output:
+    (float): cost
+    
+  used in:
