@@ -38,7 +38,40 @@ get_all_df:
 
 
 ======================
-func_obj_1_trans_cost
+func_obj_1_yield
+
+--------------------
+get_yield
+
+  process the yield
+  fuction 1 minimize de negative yield (f1(w) = -w^T * mu)
+
+  input:
+    (list[float]): weights: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
+    (numpy: array[float]): mu
+  output:
+    (list[float]): f1(w)
+
+
+======================
+func_obj_2_risk
+
+--------------------
+get_risk
+
+  process risk
+  function 2 minimize the risk (f2(w) = w^T * sigma * w) 
+
+  input:
+    (list[float]): weights: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
+    (numpy: array[array[float]]): sigma
+
+  output:
+    (list[float]): f2(w)
+
+
+======================
+func_obj_3_trans_cost
 
 --------------------
 trans_cost:
@@ -46,8 +79,8 @@ trans_cost:
   process the transaction cost
         
   input:
-    (list[float]): weights_t: previous weights repartion
-    (list[float]): weights_t_p_1: next increment weights repartion
+    (list[float]): weights_t: previous weights repartion: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
+    (list[float]): weights_t_p_1: next increment weights repartion: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
     float: prop_cost
 
   output:
