@@ -54,3 +54,23 @@ transaction_cost:
     (float): cost
     
   used in:
+
+
+======================
+process_param
+
+--------------------
+process_param:
+  
+  process mu & sigma from a given data frame    
+
+  input: 
+    (pandas: data frame): df
+    (int): day_trading
+
+  output:
+    (numpy: array[float]): mu: rendement
+    (numpy: array[array[float]]): sigma: matrice de covariance
+    (int): N: number of values
+
+  used in:
