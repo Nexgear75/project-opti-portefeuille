@@ -30,7 +30,8 @@ def get_df(file_name = DEFAULT_FILE, trace = False):
             (pandas: data frame): file_df
     """
     try:
-        file_df = pd.read_csv(DEFAULT_PATH + file_name)
+        file_df = pd.read_csv(DEFAULT_PATH + file_name,index_col = "Date")
+        # file_df.index = pd.to_date_time(df.index)
         if trace:
             print("successfully extracted " + DEFAULT_PATH + file_name)
         return file_df
@@ -38,6 +39,7 @@ def get_df(file_name = DEFAULT_FILE, trace = False):
         if trace:
             print("failed to extract " + DEFAULT_PATH + file_name) 
         pass
+
 
 def get_all_df(file_names = DEFAULT_FILE_LIST, trace = False):
     """
@@ -58,3 +60,13 @@ def get_all_df(file_names = DEFAULT_FILE_LIST, trace = False):
     for file_name in file_names:
         file_df_list.append(get_df(file_name, trace))
     return file_df_list
+
+""" test get_df 
+df = get_df(trace = True)
+print(type(df),df.head())
+"""
+
+"""test get_all_df
+dfs = get_all_df(trace = True)
+print(dfs[3].head())
+"""
