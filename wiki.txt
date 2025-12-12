@@ -7,6 +7,24 @@ Fougeroux Alex & Robert Paul-Aimé
 main.py
 
 
+--------------------
+use_gen_alg
+
+  using the genetic algo for the app
+
+  input:
+    (Bool): trace
+
+  output:
+    (list[dict{
+                "status": (Bool): success state
+                "weights": (dict{name : weight}): wallet
+                "metrics": (dict{})
+              }]): result: result list top of the solution (ruled by the inputs in the alg function)
+
+  used in:
+
+
 ##################################################
 utils
 
@@ -20,6 +38,7 @@ utils.load_data.py
 get_raw_csv
 
   Fonction interne : Scanne le dossier et charge les fichers bruts
+
   output:
     (liste[pandas: data frame]: all_series
     (dict): sector_map: mapping secteur
@@ -117,6 +136,7 @@ get_df:
   input:
     (String): file_name
     (Bool): trace : feedback of failure or success
+
   output:
     (pandas: data frame): file_df
 
@@ -132,6 +152,7 @@ get_all_df:
   input:
     (list[String]): file_names
     (Bool): trace : feedback of failure or success
+
   output:
     (list[pandas: data frame]): file_df_list
 
@@ -193,7 +214,7 @@ trans_cost:
   input:
     (list[float]): weights_t: previous weights repartion: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
     (list[float]): weights_t_p_1: next increment weights repartion
-    float: prop_cost
+    (float): prop_cost
 
   output:
     (float): cost
@@ -219,3 +240,114 @@ process_param:
     (int): N: number of values
 
   used in:
+  
+
+
+##################################################
+algo.genetic
+
+  genetic algo component function and run file
+
+
+======================
+algo.genetic.gen_alg
+
+--------------------
+gen_alg_2dim:
+  
+  genetic algo to generate some weights
+
+  input:
+    (numpy: array[float]): mu
+    (numpy: array[array[float]]): sigma
+    (int): N
+    (int): population_size: for population generation and reproduction
+    (int): selection_size: for selection
+    (int): max_iteration: in case de selection does not reach a stabilization
+    (String): selection: norm: nominal selection
+    (Bool): trace
+
+  output:
+    (list[list[float]]): selection: the last selection (sorted best -> worst)
+
+  used in:
+    main.use_gen_alg
+
+
+======================
+algo.genetic.initiate
+
+--------------------
+initiate:
+
+  initiate a population of solution 
+
+  input:
+    (int): N: Size of the weights list
+    (int): pool_size: size of the batch of solution
+    
+  output:
+    (list[list[float]]): population: list of weight list
+
+  used in:
+    algo.genetic.gen_alg.gen_alg_2dim
+
+--------------------
+gen_individual:
+
+  generate a random individual
+
+  input:
+    (int): N: Size of the weights list
+        
+  output:
+    (list[float]): individual: weights list
+
+  used in:
+    algo.genetic.initiate.initiate
+
+
+======================
+algo.genetic.reproduce
+
+--------------------
+reproduce:
+
+  generate an all new population out of the selected sample
+  we conservate both parents and children in the new population of size N
+  we integrate a mutation factor in the reproduction
+  we do a partial replacement (parent are kept in the n+1 population)
+        
+  input:
+    (list[list[float]]): selection
+    (int): N
+        
+  output:
+    (list[list[float]]): population
+
+  used in:
+    algo.genetic.gen_alg.gen_alg_2dim
+
+
+======================
+algo.genetic.select
+
+
+--------------------
+select_2dim_nom:
+
+  nominal selection
+  select the best individual among the population
+
+  input:
+    (list[list[float]]): population
+    (func_obj -> float): func_obj_1, func_obj_2: function to MINIMIZE (input weights list)
+    (numpy: array[float]): mu: rendement
+    (numpy: array[array[float]]): sigma: matrice de covariance
+    (int): pool_size: number of individual we want to select
+            
+    output:
+      (list[list[float]]): selection
+
+    used in:
+      algo.genetic.gen_alg.gen_alg_2dim
