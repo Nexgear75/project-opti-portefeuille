@@ -6,6 +6,53 @@
     Main py file, here we call the functions running the pipe line
 
 """
+
+from scripts.algo.genetic.gen_alg import gen_alg_2dim
+from scripts.algo.process_param import process_param
+from scripts.utils.load_data import get_data
+
+def use_gen_alg(trace = False):
+    if trace:
+        print("collecting data")
+    df, map = get_data()
+    if trace:
+        print("get parameters from data")
+    mu, sigma, N = process_param(df)
+    if trace:
+        print("weight processing through genetic algo")
+    try:
+        selection = gen_alg_2dim(mu,sigma,N,trace = True)
+        if trace:
+            print("genetic algo ran successfuly")
+    except:
+        print("something went rong with the genetic algo")
+    if trace:
+        print("preparing the result to send")
+    result = []
+    for obj in selection:
+        if trace:
+            print("    item preparing")
+        obj_result = {}
+        obj_result["status"] = True
+        obj_result["weights"] = {}
+        for i in range(len(obj)):
+            weight = obj[i]
+            column_name = df.columns[i]
+            obj_result["weights"][column_name] = weight
+        obj_result["metrics"] = {}
+        result.append(obj_result)
+    return result
+result = use_gen_alg(True)
+print(result[0])
+
+
+
+
+
+
+
+
+"""
 def test_f1():
     from scripts.utils.load_data import get_data
     from scripts.algo.process_param import process_param
@@ -20,7 +67,10 @@ def test_f1():
 
     f_1 = get_yield(weight,mu)
     print(type(f_1))
+    print(f_1)
+"""
 
+"""
 def test_f2():
     from scripts.utils.load_data import get_data
     from scripts.algo.process_param import process_param
@@ -35,5 +85,5 @@ def test_f2():
 
     f_2 = get_risk(weight,sigma)
     print(type(f_2))
-
-test_f2()
+    print(f_2)
+"""
