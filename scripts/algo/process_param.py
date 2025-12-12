@@ -6,7 +6,7 @@
 """
 import pandas as pd
 import numpy as np
-from .utils.const import DAY_TRADING
+from scripts.utils.const import DAY_TRADING
 
 
 def process_param(df, day_trading=DAY_TRADING):

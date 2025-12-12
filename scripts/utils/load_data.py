@@ -10,7 +10,7 @@ import numpy as np
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from .utils.const import DEFAULT_PATH
+from scripts.utils.const import DEFAULT_PATH
 
 console = Console()
 

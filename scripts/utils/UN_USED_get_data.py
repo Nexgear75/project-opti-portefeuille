@@ -5,7 +5,7 @@
 
 """
 import pandas as pd
-from .utils.const import DEFAULT_PATH, DEFAULT_FILE, DEFAULT_FILE_LIST
+from scripts.utils.const import DEFAULT_PATH, DEFAULT_FILE, DEFAULT_FILE_LIST
 
 
 def get_df(file_name = DEFAULT_FILE, trace = False):

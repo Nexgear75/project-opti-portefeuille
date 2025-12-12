@@ -7,9 +7,9 @@
 
 """
 def test_f1():
-    from .load_data import get_data
-    from .process_param import process_param
-    from .func_obj_1_yield import get_yield
+    from scripts.utils.load_data import get_data
+    from scripts.algo.process_param import process_param
+    from scripts.algo.func_obj_1_yield import get_yield
 
     df, sector_mapl = get_data()
     mu,sigma,N = process_param(df)
@@ -22,9 +22,9 @@ def test_f1():
     print(type(f_1))
 
 def test_f2():
-    from .load_data import get_data
-    from .process_param import process_param
-    from .func_obj_2_risk import get_risk
+    from scripts.utils.load_data import get_data
+    from scripts.algo.process_param import process_param
+    from scripts.algo.func_obj_2_risk import get_risk
 
     df, sector_mapl = get_data()
     mu,sigma,N = process_param(df)
