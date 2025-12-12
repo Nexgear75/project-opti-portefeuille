@@ -2,7 +2,17 @@
 Multi-criteria optimisation project
 Fougeroux Alex & Robert Paul-Aimé
 
+##################################################
+======================
+main.py
 
+
+##################################################
+utils
+
+  tools mainly to manipulate data
+
+  
 ======================
 utils.load_data.py
 
@@ -45,6 +55,7 @@ get_data
 
 ======================
 utils.const.py
+
 
 --------------------
 DEFAULT_PATH:
@@ -94,11 +105,9 @@ JOURS_TRADING:
 
 
 ======================
-main.py
+utils.get_data.py
 
-
-======================
-get_data.py
+  UNUSED
 
 --------------------
 get_df:
@@ -129,8 +138,14 @@ get_all_df:
   used in:
 
 
+##################################################
+algo
+
+  math stuff
+
+
 ======================
-func_obj_1_yield
+algo.func_obj_1_yield
 
 --------------------
 get_yield
@@ -141,12 +156,15 @@ get_yield
   input:
     (list[float]): weights: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
     (numpy: array[float]): mu
+
   output:
     (list[float]): f1(w)
 
+  used in:
+
 
 ======================
-func_obj_2_risk
+algo.func_obj_2_risk
 
 --------------------
 get_risk
@@ -161,9 +179,11 @@ get_risk
   output:
     (list[float]): f2(w)
 
+  used in:
+
 
 ======================
-func_obj_3_trans_cost
+algo.func_obj_3_trans_cost
 
 --------------------
 trans_cost:
@@ -182,7 +202,7 @@ trans_cost:
 
 
 ======================
-process_param
+algo.process_param
 
 --------------------
 process_param:
