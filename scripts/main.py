@@ -7,13 +7,13 @@
 
 """
 
-from scripts.algo.genetic.gen_alg import gen_alg_2dim
+from scripts.algo.genetic.gen_alg import gen_alg_2dim, gen_alg_3dim
 from scripts.algo.ngsa2 import alg_ngsa2
 from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
 
 
-def use_gen_alg(trace = False):
+def use_gen_alg(dim = 2,trace = False):
     """
         using the genetic algo
 
@@ -35,8 +35,12 @@ def use_gen_alg(trace = False):
     mu, sigma, N = process_param(df)
     if trace:
         print("weight processing through genetic algo")
+
+    selection = gen_alg_3dim(mu,sigma,N)
     try:
-        selection = gen_alg_2dim(mu,sigma,N,trace = True)
+        # if dim == 2:
+        #    selection = gen_alg_2dim(mu,sigma,N)
+        # else:
         if trace:
             print("genetic algo ran successfuly")
     except:
@@ -103,7 +107,7 @@ def use_alg_ngsa2(trace = False):
         obj_result["metrics"] = {}
         result.append(obj_result)
     return result
-result = use_alg_ngsa2(True)
+result = use_gen_alg(dim = 3,trace = True)
 print(result[0])
 
 
