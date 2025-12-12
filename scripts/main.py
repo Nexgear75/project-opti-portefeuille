@@ -12,6 +12,19 @@ from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
 
 def use_gen_alg(trace = False):
+    """
+        using the genetic algo
+
+        input:
+            (Bool): trace
+
+        output:
+            (list[dict{
+                        "status": (Bool): success state
+                        "weights": (dict{name : weight}): wallet
+                        "metrics": (dict{})
+                        }]): result: result list top of the solution (ruled by the inputs in the alg function)
+    """
     if trace:
         print("collecting data")
     df, map = get_data()
