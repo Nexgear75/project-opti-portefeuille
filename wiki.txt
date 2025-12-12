@@ -24,6 +24,23 @@ use_gen_alg
 
   used in:
 
+--------------------
+use_alg_ngsa2
+
+  using the ngsa2 algo for the app
+
+  input:
+    (Bool): trace
+
+  output:
+    (list[dict{
+                "status": (Bool): success state
+                "weights": (dict{name : weight}): wallet
+                "metrics": (dict{})
+              }]): result: result list top of the solution (ruled by the inputs in the alg function)
+
+  used in:
+
 
 ##################################################
 utils
@@ -83,7 +100,7 @@ DEFAULT_PATH:
   path to the data direcotry (do not include the file name itself)
 
   used in:
-    get_data.get_df
+    utils.get_data.get_df
 
 --------------------
 DEFAULT_FILE:
@@ -92,7 +109,7 @@ DEFAULT_FILE:
   file name of one of the csvs
 
   used in:
-    get_data.get_df
+    utils.get_data.get_df
 
 --------------------
 DEFAULT_FILE_LIST:
@@ -101,8 +118,8 @@ DEFAULT_FILE_LIST:
   list of file csvs names
 
   used in:
-    get_data.get_all_df
-    load_data.get_data
+    utils.get_data.get_all_df
+    utils.load_data.get_data
 
 --------------------
 DEFAULT_PROP_COST:
@@ -111,7 +128,7 @@ DEFAULT_PROP_COST:
   proportionnal cost (arbitrary value)
 
   used in:
-    func_obj_3_trans_cost.get_trans_cost
+    algo.func_obj_3_trans_cost.get_trans_cost
 
 --------------------
 JOURS_TRADING:
@@ -120,7 +137,27 @@ JOURS_TRADING:
   number of days in a trading year
 
   used in:
-    process_param.process_param
+    algo.process_param.process_param
+
+--------------------
+DEFAULT_POP_SIZE:
+
+  (int)
+  
+  used in:
+    algo.genetic.initiate.initiate
+    algo.genetic.reproduce.reproduce
+    algo.ngsa2.alg_ngsa2
+
+--------------------
+DEFAULT_MAX_ITER:
+
+  (int)
+  maximum number of iteration of the algorithm
+
+  used in:
+    algo.genetic.gen_alg.gen_alg_2dim
+    algo.ngsa2.alg_ngsa2
 
 
 ======================
@@ -241,6 +278,39 @@ process_param:
 
   used in:
   
+
+======================
+ngsa2
+
+--------------------
+ngsa2.WalletProblem:
+
+  class problem mandatory to use de pymoo library
+
+  input:
+
+  output:
+
+  used in:
+    algo.ngsa2.alg_ngsa2
+
+--------------------
+ngsa2.alg_ngsa2
+
+  ngsa2 algo to generate some weights
+
+  input:
+    (pandas: data frame): df
+    (numpy: array[float]): mu
+    (numpy: array[array[float]]): sigma
+    (int): N
+    (Bool): trace
+
+  output:
+    (list[list[float]]): selection: the last selection (sorted best -> worst)
+
+  used in:
+    main.use_alg_ngsa2
 
 
 ##################################################
