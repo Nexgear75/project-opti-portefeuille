@@ -13,6 +13,7 @@ use_gen_alg
   using the genetic algo for the app
 
   input:
+    (int): dim: number of goal function 2 / 3
     (Bool): trace
 
   output:
@@ -30,6 +31,7 @@ use_alg_ngsa2
   using the ngsa2 algo for the app
 
   input:
+    (int): dim: number of goal function 2 / 3
     (Bool): trace
 
   output:
@@ -288,6 +290,9 @@ ngsa2.WalletProblem:
   class problem mandatory to use de pymoo library
 
   input:
+    (numpy: array[float]): mu
+    (numpy: array[array[float]]): sigma
+    (int): dim: number of goal func 2 / 3
 
   output:
 
@@ -295,7 +300,7 @@ ngsa2.WalletProblem:
     algo.ngsa2.alg_ngsa2
 
 --------------------
-ngsa2.alg_ngsa2
+ngsa2.alg_ngsa2:
 
   ngsa2 algo to generate some weights
 
@@ -303,7 +308,7 @@ ngsa2.alg_ngsa2
     (pandas: data frame): df
     (numpy: array[float]): mu
     (numpy: array[array[float]]): sigma
-    (int): N
+    (int): dim: number of goal func 2 / 3
     (Bool): trace
 
   output:
@@ -324,6 +329,27 @@ algo.genetic.gen_alg
 
 --------------------
 gen_alg_2dim:
+  
+  genetic algo to generate some weights
+
+  input:
+    (numpy: array[float]): mu
+    (numpy: array[array[float]]): sigma
+    (int): N
+    (int): population_size: for population generation and reproduction
+    (int): selection_size: for selection
+    (int): max_iteration: in case de selection does not reach a stabilization
+    (String): selection: norm: nominal selection
+    (Bool): trace
+
+  output:
+    (list[list[float]]): selection: the last selection (sorted best -> worst)
+
+  used in:
+    main.use_gen_alg
+
+--------------------
+gen_alg_3dim:
   
   genetic algo to generate some weights
 
@@ -421,3 +447,23 @@ select_2dim_nom:
 
     used in:
       algo.genetic.gen_alg.gen_alg_2dim
+
+--------------------
+select_3dim_nom:
+
+  nominal selection
+  select the best individual among the population
+
+  input:
+    (list[list[float]]): population
+    (func_obj -> float): func_obj_1, func_obj_2, func_obj_3: function to MINIMIZE (input weights list)
+    (numpy: array[float]): mu: rendement
+    (numpy: array[array[float]]): sigma: matrice de covariance
+    (list[float]): base_w: weight repartion at t-1
+    (int): pool_size: number of individual we want to select
+            
+    output:
+      (list[list[float]]): selection
+
+    used in:
+      algo.genetic.gen_alg.gen_alg_3dim

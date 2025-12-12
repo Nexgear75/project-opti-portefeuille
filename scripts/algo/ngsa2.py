@@ -35,14 +35,12 @@ class WalletProblem(Problem):
         self.N = len(mu)
         self.dim = dim
         
-        # Le problème a N variables (les poids w_i)
-        # 0 <= w_i <= 1
         super().__init__(
             n_var=self.N,
-            n_obj=self.dim,  # f1 (rendement) et f2 (risque)
-            n_constr=1, # Une seule contrainte d'égalité (somme des poids = 1)
-            xl=np.zeros(self.N), # Limite inférieure de w_i : 0
-            xu=np.ones(self.N) # Limite supérieure de w_i : 1
+            n_obj=self.dim,  # goal func
+            n_constr=1, # only one constraint
+            xl=np.zeros(self.N), # w_i >= 0
+            xu=np.ones(self.N) # w_i <= 1
         )
 
     def _evaluate(self, X, out, *args, **kwargs):
@@ -50,8 +48,8 @@ class WalletProblem(Problem):
         Fonction d'évaluation appelée par l'algorithme génétique.
         X est une matrice où chaque ligne est un portefeuille (w).
         """
-        F = np.zeros((X.shape[0], self.n_obj)) # Matrice pour stocker les objectifs
-        G = np.zeros((X.shape[0], self.n_constr)) # Matrice pour stocker les contraintes
+        F = np.zeros((X.shape[0], self.n_obj)) # Goal matrix
+        G = np.zeros((X.shape[0], self.n_constr)) # constraints matrix
 
         for i, w in enumerate(X):
             # Goal function 1: yield
