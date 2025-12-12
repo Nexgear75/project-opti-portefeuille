@@ -8,8 +8,10 @@
 """
 
 from scripts.algo.genetic.gen_alg import gen_alg_2dim
+from scripts.algo.ngsa2 import alg_ngsa2
 from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
+
 
 def use_gen_alg(trace = False):
     """
@@ -55,10 +57,54 @@ def use_gen_alg(trace = False):
         obj_result["metrics"] = {}
         result.append(obj_result)
     return result
-result = use_gen_alg(True)
+
+
+def use_alg_ngsa2(trace = False):
+    """
+        using the ngsa2 algo
+
+        input:
+            (Bool): trace
+
+        output:
+            (list[dict{
+                        "status": (Bool): success state
+                        "weights": (dict{name : weight}): wallet
+                        "metrics": (dict{})
+                        }]): result: result list top of the solution (ruled by the inputs in the alg function)
+    """
+    if trace:
+        print("collecting data")
+    df, map = get_data()
+    if trace:
+        print("get parameters from data")
+    mu, sigma, N = process_param(df)
+    if trace:
+        print("weight processing through ngsa2 algo")
+    try:
+        selection = alg_ngsa2(df,mu,sigma)
+        if trace:
+            print("ngsa2 algo ran successfuly")
+    except:
+        print("something went rong with the ngsa2 algo")
+    if trace:
+        print("preparing the result to send")
+    result = []
+    for obj in selection:
+        if trace:
+            print("    item preparing")
+        obj_result = {}
+        obj_result["status"] = True
+        obj_result["weights"] = {}
+        for i in range(len(obj)):
+            weight = float(obj[i])
+            column_name = df.columns[i]
+            obj_result["weights"][column_name] = weight
+        obj_result["metrics"] = {}
+        result.append(obj_result)
+    return result
+result = use_alg_ngsa2(True)
 print(result[0])
-
-
 
 
 

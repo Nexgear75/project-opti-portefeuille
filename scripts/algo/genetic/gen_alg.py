@@ -10,8 +10,9 @@ from scripts.algo.genetic.select import select_2dim_nom
 from scripts.algo.genetic.reproduce import reproduce
 from scripts.algo.func_obj_1_yield import get_yield
 from scripts.algo.func_obj_2_risk import get_risk
+from scripts.utils.const import DEFAULT_POP_SIZE, DEFAULT_MAX_ITER
 
-def gen_alg_2dim(mu,sigma,N,population_size = 50,selection_size = 10,max_iteration = 100,selection = "nom",trace = False):
+def gen_alg_2dim(mu,sigma,N,population_size = DEFAULT_POP_SIZE,selection_size = 20,max_iteration = DEFAULT_MAX_ITER,selection = "nom",trace = False):
     """
         genetic algo to generate some weights
 

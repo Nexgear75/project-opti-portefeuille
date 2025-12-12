@@ -5,8 +5,9 @@
 
 """
 from random import randint
+from scripts.utils.const import DEFAULT_POP_SIZE
 
-def reproduce(selection,N,pool_size = 50,trace = False):
+def reproduce(selection,N,pool_size = DEFAULT_POP_SIZE,trace = False):
     """
         generate an all new population out of the selected sample
         we conservate both parents and children in the new population of size N

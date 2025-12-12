@@ -5,8 +5,9 @@
 
 """
 from random import randint, shuffle
+from scripts.utils.const import DEFAULT_POP_SIZE
 
-def initiate(N,pool_size = 50):
+def initiate(N,pool_size = DEFAULT_POP_SIZE):
     """
         initiate a population of solution 
 
