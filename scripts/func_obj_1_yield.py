@@ -17,4 +17,5 @@ def get_yield(weights, mu):
         output:
             (list[float]): f1(w)
     """
+    weights = np.array(weights)
     return -np.dot(weights,mu)

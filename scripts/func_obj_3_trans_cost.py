@@ -4,7 +4,7 @@
     Fougeroux Alex & Robert Paul-Aime
 
 """
-from utils.const import DEFAULT_PROP_COST
+from .utils.const import DEFAULT_PROP_COST
 
 def get_trans_cost(weights_t, weights_t_p_1, prop_cost = DEFAULT_PROP_COST, trace = False):
     """

@@ -18,4 +18,5 @@ def get_risk(weights,sigma):
         output:
             (list[float]): f2(w)
     """
+    weights = np.array(weights)
     return np.dot(weights.T,np.dot(sigma,weights))
