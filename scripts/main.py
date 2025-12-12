@@ -18,6 +18,7 @@ def use_gen_alg(dim = 2,trace = False):
         using the genetic algo
 
         input:
+            (int): dim: number of goal function 2 / 3
             (Bool): trace
 
         output:
@@ -36,11 +37,11 @@ def use_gen_alg(dim = 2,trace = False):
     if trace:
         print("weight processing through genetic algo")
 
-    selection = gen_alg_3dim(mu,sigma,N)
     try:
-        # if dim == 2:
-        #    selection = gen_alg_2dim(mu,sigma,N)
-        # else:
+        if dim == 2:
+            selection = gen_alg_2dim(mu,sigma,N)
+        else:
+            selection = gen_alg_3dim(mu,sigma,N)
         if trace:
             print("genetic algo ran successfuly")
     except:
@@ -63,11 +64,12 @@ def use_gen_alg(dim = 2,trace = False):
     return result
 
 
-def use_alg_ngsa2(trace = False):
+def use_alg_ngsa2(dim = 2,trace = False):
     """
         using the ngsa2 algo
 
         input:
+            (int): dim: number of goal function 2 / 3
             (Bool): trace
 
         output:
@@ -85,8 +87,8 @@ def use_alg_ngsa2(trace = False):
     mu, sigma, N = process_param(df)
     if trace:
         print("weight processing through ngsa2 algo")
+    selection = alg_ngsa2(df,mu,sigma,dim = dim)
     try:
-        selection = alg_ngsa2(df,mu,sigma)
         if trace:
             print("ngsa2 algo ran successfuly")
     except:
@@ -107,7 +109,7 @@ def use_alg_ngsa2(trace = False):
         obj_result["metrics"] = {}
         result.append(obj_result)
     return result
-result = use_gen_alg(dim = 3,trace = True)
+result = use_alg_ngsa2(dim = 3,trace = True)
 print(result[0])
 
 

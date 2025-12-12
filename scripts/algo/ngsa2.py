@@ -13,6 +13,7 @@ from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
 from scripts.algo.func_obj_1_yield import get_yield
 from scripts.algo.func_obj_2_risk import get_risk
+from scripts.algo.func_obj_3_trans_cost import get_trans_cost
 
 from scripts.utils.const import DEFAULT_POP_SIZE,DEFAULT_MAX_ITER
 
@@ -28,16 +29,17 @@ class WalletProblem(Problem):
     Contraintes: C_Base (somme(w)=1 et w_i >= 0).
     """
 
-    def __init__(self, mu, sigma):
+    def __init__(self, mu, sigma, dim = 2):
         self.mu = mu
         self.sigma = sigma
         self.N = len(mu)
+        self.dim = dim
         
         # Le problème a N variables (les poids w_i)
         # 0 <= w_i <= 1
         super().__init__(
             n_var=self.N,
-            n_obj=2,  # f1 (rendement) et f2 (risque)
+            n_obj=self.dim,  # f1 (rendement) et f2 (risque)
             n_constr=1, # Une seule contrainte d'égalité (somme des poids = 1)
             xl=np.zeros(self.N), # Limite inférieure de w_i : 0
             xu=np.ones(self.N) # Limite supérieure de w_i : 1
@@ -52,34 +54,21 @@ class WalletProblem(Problem):
         G = np.zeros((X.shape[0], self.n_constr)) # Matrice pour stocker les contraintes
 
         for i, w in enumerate(X):
-            # Objectif 1: Rendement (f1 = -w^T * mu) - À MINIMISER
-            # Note: w est déjà la ligne i de X
-            f1 = -np.dot(w, self.mu) 
+            # Goal function 1: yield
             f1 = get_yield(w,self.mu)
-            # Objectif 2: Risque (f2 = w^T * Sigma * w) - À MINIMISER
-            f2 = np.dot(w.T, np.dot(self.sigma, w))
+            # Goal function 2: risk
             f2 = get_risk(w, self.sigma)
+            # Goal function 3: transition cost
+            base_w = []
+            for j in range(self.N):
+                base_w.append(1/self.N)
+            f3 = get_trans_cost(base_w,w)
 
             F[i, 0] = f1
             F[i, 1] = f2
+            F[i, 2] = f3
             
-            # Contrainte 1 (G): Contrainte d'égalité. 
-            # La somme des poids doit être égale à 1.
-            # pymoo gère les contraintes comme G(x) <= 0. 
-            # Pour une égalité (somme=1), on la transforme en: |somme(w) - 1| <= epsilon
-            # On utilise une pénalité légère pour l'égalité: |somme(w) - 1|
-            # Si le résultat est 0, la contrainte est satisfaite.
-            # G[i, 0] = |np.sum(w) - 1|
-            # Une façon plus simple de traiter l'égalité est souvent de la laisser non gérée 
-            # dans G et de la faire gérer par un opérateur de réparation (Repair) pour les AG, 
-            # mais pour l'instant, nous utilisons la contrainte d'inégalité stricte pour l'égalité.
-            
-            # En théorie, pour G(x) = 0, on utilise deux contraintes d'inégalité:
-            # G1(x) = somme(w) - 1 <= 0  (somme <= 1)
-            # G2(x) = 1 - somme(w) <= 0  (somme >= 1)
-            # Puisque NSGA-II est moins performant sur l'égalité stricte, nous utilisons un 
-            # simple écart de la somme à 1 comme contrainte de violation G (à minimiser à 0).
-            # Note: Dans pymoo, une contrainte G > 0 est une violation.
+            # weights sum = 1
             G[i, 0] = np.abs(np.sum(w) - 1.0) 
             
         out["F"] = F
@@ -87,28 +76,27 @@ class WalletProblem(Problem):
 
 
 # --- 3. CONFIGURATION ET EXÉCUTION DE L'ALGORITHME NSGA-II ---
-def alg_ngsa2(df,mu,sigma,trace = False):
+def alg_ngsa2(df,mu,sigma,dim = 2,trace = False):
     """docstr
     """
-    print()
-    # 3.1 Définir le problème
-    problem = WalletProblem(mu, sigma)
+    if trace:
+        print("initiating")
+    problem = WalletProblem(mu, sigma, dim = dim)
 
-    # 3.2 Définir l'algorithme
     algorithm = NSGA2(
-        pop_size=100, # Taille de la population
-        sampling=FloatRandomSampling(), # Echantillonnage
-        crossover=SBX(prob=0.9, eta=15), # Croisement
+        pop_size=100, 
+        sampling=FloatRandomSampling(),
+        crossover=SBX(prob=0.9, eta=15),
         mutation=PM(prob=(1.0 / problem.N), eta=20),
-        eliminate_duplicates=True # Éliminer les doublons
+        eliminate_duplicates=True 
     )
 
-    # 3.3 Optimisation (génération du front de Pareto)
-    print("\n--- Début de l'optimisation NSGA-II (Niveau 1) ---")
+    if trace:
+        print("optimizing")
     result = minimize(
         problem,
         algorithm,
-        ('n_gen', DEFAULT_MAX_ITER), # Arrêter après 200 générations
+        ('n_gen', DEFAULT_MAX_ITER), # stop after max iteration
         seed=1,
         verbose=trace
     )
