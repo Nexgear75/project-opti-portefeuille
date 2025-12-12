@@ -2,6 +2,89 @@
 Multi-criteria optimisation project
 Fougeroux Alex & Robert Paul-Aimé
 
+
+======================
+utils.load_data.py
+
+--------------------
+get_raw_csv
+
+  Fonction interne : Scanne le dossier et charge les fichers bruts
+  output:
+    (liste[pandas: data frame]: all_series
+    (dict): sector_map: mapping secteur
+
+--------------------
+clean_and_merge
+
+  Fonction interne : Fusionne, nettoie les trous et retire les aberrations
+
+  input:
+    (pandas: data frame): all_series
+
+  output:
+    (pandas: data frame): cleaned_data_frame
+
+--------------------
+get_data
+
+  Récupère, nettoie et retourne les données prêtes à l'emploi.
+
+  output:
+    prices_df (pd.DataFrame): Matrice des prix ajustés nettoyés
+    sector_map (dict): Dictionnaire {Ticker -> Secteur}
+
+
+======================
+utils.const.py
+
+--------------------
+DEFAULT_PATH:
+
+  (String)
+  path to the data direcotry (do not include the file name itself)
+
+  used in:
+    get_data.get_df
+
+--------------------
+DEFAULT_FILE:
+
+  (String)
+  file name of one of the csvs
+
+  used in:
+    get_data.get_df
+
+--------------------
+DEFAULT_FILE_LIST:
+
+  (list[String])
+  list of file csvs names
+
+  used in:
+    get_data.get_all_df
+    load_data.get_data
+
+--------------------
+DEFAULT_PROP_COST:
+
+  (float)
+  proportionnal cost (arbitrary value)
+
+  used in:
+    func_obj_3_trans_cost.get_trans_cost
+
+--------------------
+JOURS_TRADING:
+
+  (int)
+  number of days in a trading year
+
+  used in:
+    process_param.process_param
+
+
 ======================
 main.py
 
@@ -11,6 +94,7 @@ get_data.py
 
 --------------------
 get_df:
+
   extract the data from the csv files in the data dir
 
   input:
@@ -74,13 +158,13 @@ get_risk
 func_obj_3_trans_cost
 
 --------------------
-get_trans_cost:
+trans_cost:
 
   process the transaction cost
         
   input:
     (list[float]): weights_t: previous weights repartion: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
-    (list[float]): weights_t_p_1: next increment weights repartion: WE MIGHT NEED TO CAST IT TO (numpy: array[float])
+    (list[float]): weights_t_p_1: next increment weights repartion
     float: prop_cost
 
   output:
