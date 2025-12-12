@@ -6,11 +6,10 @@
 """
 import pandas as pd
 import numpy as np
+from utils.const import DAY_TRADING
 
-# for a trading year
-JOURS_TRADING = 252
 
-def process_param(df, day_trading=JOURS_TRADING):
+def process_param(df, day_trading=DAY_TRADING):
     """
     process mu & sigma from a given data frame    
 

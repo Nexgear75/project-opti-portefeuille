@@ -1,9 +1,16 @@
+"""
+
+    Multi-criteria optimisation project
+    Fougeroux Alex & Robert Paul-Aime
+
+"""
 import os
 import pandas as pd
 import numpy as np
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from utils.const import DEFAULT_PATH
 
 console = Console()
 
@@ -12,7 +19,8 @@ def load_raw_csvs(folder_path: str):
     """
     Fonction interne : Scanne le dossier et charge les fichers bruts
     output:
-        liste de DataFrame et un mapping secteur.
+        (liste[pandas: dataframe]) list_series 
+        (dict) sector_map: mapping secteur
     """
 
     if not os.path.exists(folder_path):
@@ -69,6 +77,11 @@ def load_raw_csvs(folder_path: str):
 def clean_and_merge(all_series, missing_threshold=0.1):
     """
     Fonction interne : Fusionne, nettoie les trous et retire les aberrations
+    input:
+        (pandas: data frame): all_series
+
+    output:
+        (pandas: data frame): cleaned_data_frame
     """
     if not all_series:
         return pd.DataFrame()
@@ -108,7 +121,7 @@ def clean_and_merge(all_series, missing_threshold=0.1):
     return df_cleaned
 
 
-def get_data(folder_path="data/"):
+def get_data(folder_path=DEFAULT_PATH):
     """
     Récupère, nettoie et retourne les données prêtes à l'emploi.
     output:

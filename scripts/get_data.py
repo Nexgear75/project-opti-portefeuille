@@ -5,19 +5,8 @@
 
 """
 import pandas as pd
+from utils.const import DEFAULT_PATH, DEFAULT_FILE, DEFAULT_FILE_LIST
 
-DEFAULT_PATH = "data/"
-DEFAULT_FILE = "Energy.csv"
-DEFAULT_FILE_LIST = [
-    "Energy.csv",
-    "Financials.csv",
-    "Health_Care.csv",
-    "Industrials.csv",
-    "Information_Technology.csv",
-    "Materials.csv",
-    "Real_Estate.csv",
-    "Utilities.csv"
-]
 
 def get_df(file_name = DEFAULT_FILE, trace = False):
     """
