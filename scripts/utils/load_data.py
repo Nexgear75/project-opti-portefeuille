@@ -1,9 +1,10 @@
 """
 
-    Multi-criteria optimisation project
-    Fougeroux Alex & Robert Paul-Aime
+Multi-criteria optimisation project
+Fougeroux Alex & Robert Paul-Aime
 
 """
+
 import os
 import pandas as pd
 import numpy as np
@@ -19,7 +20,7 @@ def load_raw_csvs(folder_path: str):
     """
     Fonction interne : Scanne le dossier et charge les fichers bruts
     output:
-        (liste[pandas: dataframe]) list_series 
+        (liste[pandas: dataframe]) list_series
         (dict) sector_map: mapping secteur
     """
 
