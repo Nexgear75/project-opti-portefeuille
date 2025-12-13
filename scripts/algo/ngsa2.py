@@ -38,7 +38,7 @@ class WalletProblem(Problem):
         super().__init__(
             n_var=self.N,
             n_obj=self.dim,  # goal func
-            n_constr=1, # only one constraint
+            n_constr= 1 if self.dim == 2 else 2,
             xl=np.zeros(self.N), # w_i >= 0
             xu=np.ones(self.N) # w_i <= 1
         )
@@ -71,6 +71,10 @@ class WalletProblem(Problem):
             
             # weights sum = 1
             G[i, 0] = np.abs(np.sum(w) - 1.0) 
+                
+            if self.dim == 3:
+                nb_not0 = np.sum(w>0.0001) # delta tolerence = 0.0001 here
+                G[i,1] = np.abs(nb_not0 - 5) # K = 5
             
         out["F"] = F
         out["G"] = G
