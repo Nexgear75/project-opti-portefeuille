@@ -1,9 +1,9 @@
 """
 
-    Multi-criteria optimisation project
-    Fougeroux Alex & Robert Paul-Aime
-    
-    Main py file, here we call the functions running the pipe line
+Multi-criteria optimisation project
+Fougeroux Alex & Robert Paul-Aime
+
+Main py file, here we call the functions running the pipe line
 
 """
 
@@ -13,20 +13,20 @@ from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
 
 
-def use_gen_alg(dim = 2,trace = False):
+def use_gen_alg(dim=2, trace=False):
     """
-        using the genetic algo
+    using the genetic algo
 
-        input:
-            (int): dim: number of goal function 2 / 3
-            (Bool): trace
+    input:
+        (int): dim: number of goal function 2 / 3
+        (Bool): trace
 
-        output:
-            (list[dict{
-                        "status": (Bool): success state
-                        "weights": (dict{name : weight}): wallet
-                        "metrics": (dict{})
-                        }]): result: result list top of the solution (ruled by the inputs in the alg function)
+    output:
+        (list[dict{
+                    "status": (Bool): success state
+                    "weights": (dict{name : weight}): wallet
+                    "metrics": (dict{})
+                    }]): result: result list top of the solution (ruled by the inputs in the alg function)
     """
     if trace:
         print("collecting data")
@@ -39,9 +39,9 @@ def use_gen_alg(dim = 2,trace = False):
 
     try:
         if dim == 2:
-            selection = gen_alg_2dim(mu,sigma,N)
+            selection = gen_alg_2dim(mu, sigma, N)
         else:
-            selection = gen_alg_3dim(mu,sigma,N)
+            selection = gen_alg_3dim(mu, sigma, N)
         if trace:
             print("genetic algo ran successfuly")
     except:
@@ -64,20 +64,20 @@ def use_gen_alg(dim = 2,trace = False):
     return result
 
 
-def use_alg_ngsa2(dim = 2,trace = False):
+def use_alg_ngsa2(dim=2, trace=False):
     """
-        using the ngsa2 algo
+    using the ngsa2 algo
 
-        input:
-            (int): dim: number of goal function 2 / 3
-            (Bool): trace
+    input:
+        (int): dim: number of goal function 2 / 3
+        (Bool): trace
 
-        output:
-            (list[dict{
-                        "status": (Bool): success state
-                        "weights": (dict{name : weight}): wallet
-                        "metrics": (dict{})
-                        }]): result: result list top of the solution (ruled by the inputs in the alg function)
+    output:
+        (list[dict{
+                    "status": (Bool): success state
+                    "weights": (dict{name : weight}): wallet
+                    "metrics": (dict{})
+                    }]): result: result list top of the solution (ruled by the inputs in the alg function)
     """
     if trace:
         print("collecting data")
@@ -87,7 +87,7 @@ def use_alg_ngsa2(dim = 2,trace = False):
     mu, sigma, N = process_param(df)
     if trace:
         print("weight processing through ngsa2 algo")
-    selection = alg_ngsa2(df,mu,sigma,dim = dim)
+    selection = alg_ngsa2(df, mu, sigma, dim=dim)
     try:
         if trace:
             print("ngsa2 algo ran successfuly")
@@ -109,12 +109,10 @@ def use_alg_ngsa2(dim = 2,trace = False):
         obj_result["metrics"] = {}
         result.append(obj_result)
     return result
-result = use_alg_ngsa2(dim = 3,trace = True)
+
+
+result = use_alg_ngsa2(dim=3, trace=True)
 print(result[0])
-
-
-
-
 
 
 """
