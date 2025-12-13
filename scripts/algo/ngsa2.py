@@ -57,14 +57,17 @@ class WalletProblem(Problem):
             # Goal function 2: risk
             f2 = get_risk(w, self.sigma)
             # Goal function 3: transition cost
-            base_w = []
-            for j in range(self.N):
-                base_w.append(1/self.N)
-            f3 = get_trans_cost(base_w,w)
+            
 
             F[i, 0] = f1
             F[i, 1] = f2
-            F[i, 2] = f3
+
+            if self.dim == 3:
+                base_w = []
+                for j in range(self.N):
+                    base_w.append(1/self.N)
+                f3 = get_trans_cost(base_w,w)
+                F[i, 2] = f3
             
             # weights sum = 1
             G[i, 0] = np.abs(np.sum(w) - 1.0) 
