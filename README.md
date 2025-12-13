@@ -40,11 +40,12 @@ Suivez ces étapes pour faire tourner le projet sur votre machine locale.
 ### 1. Cloner le projet
 
 ```bash
-git clone [https://github.com/VOTRE_PSEUDO/project-opti-portefeuille.git](https://github.com/VOTRE_PSEUDO/project-opti-portefeuille.git)
+git clone https://github.com/Nexgear75/project-opti-portefeuille.git
 cd project-opti-portefeuille
 ```
 
 ### 2. Créer un environnement virtuel (Recommandé)
+
 * Sur Mac/Linux :
 
 ```bash
