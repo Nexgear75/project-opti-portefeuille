@@ -1,9 +1,9 @@
 """
 
-Multi-criteria optimisation project
-Fougeroux Alex & Robert Paul-Aime
-
-Main py file, here we call the functions running the pipe line
+    Multi-criteria optimisation project
+    Fougeroux Alex & Robert Paul-Aime
+    
+    Main py file, here we call the functions running the pipe line
 
 """
 
@@ -11,22 +11,24 @@ from scripts.algo.genetic.gen_alg import gen_alg_2dim, gen_alg_3dim
 from scripts.algo.ngsa2 import alg_ngsa2
 from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
+from scripts.algo.get_pareto import get_pareto
 
 
-def use_gen_alg(dim=2, trace=False):
+def use_alg(algo = "gen",dim = 2,trace = False):
     """
-    using the genetic algo
+        using the genetic algo
 
-    input:
-        (int): dim: number of goal function 2 / 3
-        (Bool): trace
+        input:
+            (String): algo: gen / ngsa2
+            (int): dim: number of goal function 2 / 3
+            (Bool): trace
 
-    output:
-        (list[dict{
-                    "status": (Bool): success state
-                    "weights": (dict{name : weight}): wallet
-                    "metrics": (dict{})
-                    }]): result: result list top of the solution (ruled by the inputs in the alg function)
+        output:
+            (list[dict{
+                        "status": (Bool): success state
+                        "weights": (dict{name : weight}): wallet
+                        "metrics": (dict{})
+                        }]): result: result list top of the solution (ruled by the inputs in the alg function)
     """
     if trace:
         print("collecting data")
@@ -35,23 +37,29 @@ def use_gen_alg(dim=2, trace=False):
         print("get parameters from data")
     mu, sigma, N = process_param(df)
     if trace:
-        print("weight processing through genetic algo")
+        print("weight processing through optimization alg")
 
-    try:
-        if dim == 2:
-            selection = gen_alg_2dim(mu, sigma, N)
-        else:
-            selection = gen_alg_3dim(mu, sigma, N)
+    if True : # try:
+        if algo == "gen":
+            if dim == 2:
+                selection = gen_alg_2dim(mu,sigma,N)
+            else:
+                selection = gen_alg_3dim(mu,sigma,N)
+        elif algo == "ngsa2":
+            selection = alg_ngsa2(df,mu,sigma,dim = dim)
         if trace:
-            print("genetic algo ran successfuly")
-    except:
+            print("alg ran successfuly")
+        # except:
         print("something went rong with the genetic algo")
     if trace:
+        print(len(selection)," elements selected")
+        print("processing pareto front")
+    selection = get_pareto(selection,mu,sigma,dim)
+    if trace:
+        print(len(selection)," pereto optimal elements")
         print("preparing the result to send")
     result = []
     for obj in selection:
-        if trace:
-            print("    item preparing")
         obj_result = {}
         obj_result["status"] = True
         obj_result["weights"] = {}
@@ -63,56 +71,18 @@ def use_gen_alg(dim=2, trace=False):
         result.append(obj_result)
     return result
 
+result = []
+result.append(use_alg(algo = "gen", dim = 2, trace = True))
+result.append(use_alg(algo = "gen", dim = 3, trace = True))
+result.append(use_alg(algo = "ngsa2", dim = 2, trace = True))
+result.append(use_alg(algo = "ngsa2", dim = 3, trace = True))
 
-def use_alg_ngsa2(dim=2, trace=False):
-    """
-    using the ngsa2 algo
-
-    input:
-        (int): dim: number of goal function 2 / 3
-        (Bool): trace
-
-    output:
-        (list[dict{
-                    "status": (Bool): success state
-                    "weights": (dict{name : weight}): wallet
-                    "metrics": (dict{})
-                    }]): result: result list top of the solution (ruled by the inputs in the alg function)
-    """
-    if trace:
-        print("collecting data")
-    df, map = get_data()
-    if trace:
-        print("get parameters from data")
-    mu, sigma, N = process_param(df)
-    if trace:
-        print("weight processing through ngsa2 algo")
-    selection = alg_ngsa2(df, mu, sigma, dim=dim)
-    try:
-        if trace:
-            print("ngsa2 algo ran successfuly")
-    except:
-        print("something went rong with the ngsa2 algo")
-    if trace:
-        print("preparing the result to send")
-    result = []
-    for obj in selection:
-        if trace:
-            print("    item preparing")
-        obj_result = {}
-        obj_result["status"] = True
-        obj_result["weights"] = {}
-        for i in range(len(obj)):
-            weight = float(obj[i])
-            column_name = df.columns[i]
-            obj_result["weights"][column_name] = weight
-        obj_result["metrics"] = {}
-        result.append(obj_result)
-    return result
+for dict in result:
+    weights = dict[0]["weights"]
+    print(max(weights, key=weights.get))
 
 
-result = use_alg_ngsa2(dim=3, trace=True)
-print(result[0])
+
 
 
 """

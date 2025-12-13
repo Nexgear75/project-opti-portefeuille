@@ -5,6 +5,7 @@
 
 """
 from scripts.utils.const import DEFAULT_PROP_COST
+import numpy as np
 
 def get_trans_cost(weights_t, weights_t_p_1, prop_cost = DEFAULT_PROP_COST, trace = False):
     """
@@ -23,8 +24,8 @@ def get_trans_cost(weights_t, weights_t_p_1, prop_cost = DEFAULT_PROP_COST, trac
         if trace:
             print("unable to process the transaction_cost\n    The length of both weight list must be the same.")
             return []
-    weight_diff = 0
-    for i in range(n):
-        weight_diff += (weights_t[i] - weights_t_p_1[i]) if weights_t[i] >= weights_t_p_1[i] else (weights_t_p_1[i] - weights_t[i])
+    weights_t = np.asarray(weights_t, np.float32)
+    weights_t_p_1 = np.asarray(weights_t_p_1, np.float32)
+    weight_diff = np.sum(np.abs(weights_t_p_1 - weights_t))
     cost = prop_cost * weight_diff
     return cost
