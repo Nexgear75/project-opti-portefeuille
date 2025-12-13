@@ -5,14 +5,18 @@ import plotly.express as px
 import plotly.graph_objects as go
 import os
 import sys
+import random
 
-# Import de get data (problème pour python de trouver les fichiers)
+
+# Gestion des imports dans les autres fichiers
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 sys.path.append(root_dir)
 
 try:
-    from scripts.load_data import get_data
+    from scripts.utils.load_data import get_data
+    from scripts.main import use_alg_ngsa2
+    from scripts.algo.process_param import process_param
 except ImportError as e:
     st.error(f"Erreur d'import : {e}")
     st.stop()
@@ -38,54 +42,113 @@ except Exception as e:
     st.error(f"Erreur critique lors du chargement des données : {e}")
     st.stop()
 
-# Fonction de simulation (à finir avec le code de PA)
 
-
-def mock_markowitz_optimization(selected_assets, r_min):
+def run_real_optimization(prices_df, r_min_target):
     """
-    Génère un résultat aléatoire respectant le format d'entrée (a update plus tard)
-    input:
-        Liste d'actifs, Rendement min
-    output:
-        Dictionnaire {status, weights, metrics}
+    ADAPTATEUR : Connecte l'algo NSGA-II de ton collègue à l'interface Streamlit.
     """
+    mu, sigma, N = process_param(prices_df)
 
-    if not selected_assets:
+    try:
+        raw_results = use_alg_ngsa2(dim=3, trace=False)
+    except Exception as e:
+        st.error(f"Erreur dans l'algo NSGA-II : {e}")
         return {"status": False}
 
-    # Génération de poids aléatoires qui somment à 1 (comme condition réel)
-    n = len(selected_assets)
-    weights = np.random.random(n)
-    weights /= weights.sum()
+    processed_candidates = []
 
-    # Création du dictionnaire de poids
-    weights_dict = dict(zip(selected_assets, weights))
+    for item in raw_results:
+        weights_dict = item["weights"]
 
-    # Simulation des métriques de rendements et de risque
-    simulated_return = r_min + np.random.uniform(0.01, 0.05)
-    simulated_volatility = simulated_return * 0.8 + np.random.uniform(0.01, 0.03)
+        w_vec = np.array([weights_dict.get(col, 0.0) for col in prices_df.columns])
+
+        total_sum = np.sum(w_vec)
+        if total_sum > 0:
+            w_vec = w_vec / total_sum
+
+            weights_dict = {
+                col: val for col, val in zip(prices_df.columns, w_vec) if val > 0
+            }
+
+        ret = np.dot(w_vec, mu)
+        risk = np.sqrt(np.dot(w_vec.T, np.dot(sigma, w_vec)))
+
+        processed_candidates.append(
+            {
+                "weights": weights_dict,
+                "metrics": {"expected_return": ret, "volatility": risk},
+            }
+        )
+
+    valid_portfolios = [
+        p
+        for p in processed_candidates
+        if p["metrics"]["expected_return"] >= r_min_target
+    ]
+
+    if valid_portfolios:
+        best_portfolio = min(valid_portfolios, key=lambda x: x["metrics"]["volatility"])
+    else:
+        best_portfolio = max(
+            processed_candidates, key=lambda x: x["metrics"]["expected_return"]
+        )
+        st.warning(
+            f"Attention : L'algorithme n'a pas trouvé de solution atteignant {r_min_target:.1%}. Voici la meilleure solution disponible."
+        )
 
     return {
         "status": True,
-        "weights": weights_dict,  # <--- LA RECETTE
-        "metrics": {  # <--- LES CHIFFRES
-            "expected_return": simulated_return,
-            "volatility": simulated_volatility,
-        },
+        "weights": best_portfolio["weights"],
+        "metrics": best_portfolio["metrics"],
+        "all_front": processed_candidates,
     }
 
 
-# Sidebar
 st.sidebar.title("Paramètres")
 
-# Sélection des actifs
+if "asset_multiselect" not in st.session_state:
+    st.session_state["asset_multiselect"] = (
+        all_tickers[:5] if len(all_tickers) > 5 else all_tickers
+    )
+
+
+def generate_random_portfolio():
+    """Génère une sélection diversifiée de 10 à 20 actifs"""
+    target_size = random.randint(10, 20)
+    new_selection = []
+
+    sectors_dict = {}
+    for ticker in all_tickers:
+        sec = sector_map.get(ticker, "Unknown")
+        if sec not in sectors_dict:
+            sectors_dict[sec] = []
+        sectors_dict[sec].append(ticker)
+
+    for sec, tickers in sectors_dict.items():
+        if tickers:
+            new_selection.append(random.choice(tickers))
+
+    remaining_slots = target_size - len(new_selection)
+    if remaining_slots > 0:
+        pool = [t for t in all_tickers if t not in new_selection]
+        if pool:
+            extras = random.sample(pool, min(len(pool), remaining_slots))
+            new_selection.extend(extras)
+
+    return new_selection
+
+
+if st.sidebar.button("Sélection Aléatoire Diversifiée", type="secondary"):
+    st.session_state["asset_multiselect"] = generate_random_portfolio()
+    st.rerun()
+
 selected_assets = st.sidebar.multiselect(
     "1. Sélection des Actifs",
     options=all_tickers,
-    default=all_tickers[:5] if len(all_tickers) > 5 else all_tickers,
+    key="asset_multiselect",
+    help="Utilisez le bouton ci-dessus pour générer un panier varié.",
 )
 
-# Sélection du rendement minimal
 r_min_input = st.sidebar.slider(
     "2. Rendement Annuel Minimal visé (%)",
     min_value=0.0,
@@ -95,7 +158,8 @@ r_min_input = st.sidebar.slider(
 )
 r_min_val = r_min_input / 100.0
 
-# Bouton de lancement
+st.sidebar.divider()
+
 run_btn = st.sidebar.button("Lancer l'Optimisation", type="primary")
 
 # Page principale
@@ -122,27 +186,25 @@ with tab1:
 
 with tab2:
     if run_btn and selected_assets:
-        with st.spinner("Calcul du portefeuille optimal en cours..."):
-            resultat = mock_markowitz_optimization(selected_assets, r_min_val)
+        with st.spinner(
+            "Optimisation NSGA-II en cours (cela peut prendre du temps)..."
+        ):
+            subset_df = prices_df[selected_assets]
+
+            resultat = run_real_optimization(subset_df, r_min_val)
 
             if resultat["status"]:
                 metrics = resultat["metrics"]
                 col1, col2, col3 = st.columns(3)
 
-                col1.metric(
-                    "Rendement Espéré",
-                    f"{metrics['expected_return']:.2%}",
-                    delta="Annuel",
+                col1.metric("Rendement Espéré", f"{metrics['expected_return']:.2%}")
+                col2.metric("Risque (Volatilité)", f"{metrics['volatility']:.2%}")
+                sharpe = (
+                    metrics["expected_return"] / metrics["volatility"]
+                    if metrics["volatility"] > 0
+                    else 0
                 )
-                col2.metric(
-                    "Risque (Volatilité)",
-                    f"{metrics['volatility']:.2%}",
-                    delta_color="inverse",
-                )
-                col3.metric(
-                    "Ratio de Sharpe (Est.)",
-                    f"{metrics['expected_return'] / metrics['volatility']:.2f}",
-                )
+                col3.metric("Ratio de Sharpe (Est.)", f"{sharpe:.2f}")
 
                 st.divider()
 
@@ -151,7 +213,6 @@ with tab2:
                 with col_chart:
                     st.subheader("Allocation Sectorielle & Actifs")
 
-                    # Transformation du dictionnaire de poids en dataframe
                     weights_data = resultat["weights"]
                     df_weights = pd.DataFrame(
                         list(weights_data.items()), columns=["Ticker", "Poids"]
@@ -161,26 +222,14 @@ with tab2:
 
                     df_weights = df_weights[df_weights["Poids"] > 0.001]
 
-                    # Graphique sunburst
                     fig_sun = px.sunburst(
                         df_weights,
                         path=["Secteur", "Ticker"],
                         values="Poids",
                         color="Secteur",
-                        title="Répartition Macro-économique du Portefeuille",
+                        title="Répartition Macro-économique",
                     )
                     st.plotly_chart(fig_sun, width="stretch")
-
-                    # Graphique de barres
-                    fig_bar = px.bar(
-                        df_weights,
-                        x="Poids",
-                        y="Ticker",
-                        orientation="h",
-                        color="Secteur",
-                        title="Allocation des Actifs",
-                    )
-                    st.plotly_chart(fig_bar, width="stretch")
 
                 with col_table:
                     st.subheader("Détail des Poids")
@@ -193,38 +242,47 @@ with tab2:
                     )
 
                 st.divider()
-                st.subheader("Positionnement sur la Frontière Efficiente")
+                st.subheader("Frontière de Pareto (Résultats de l'Algo)")
 
-                # Génération de faux points pour dessiner la courbe
-                # A fournir par PA
-                fake_risks = np.linspace(0.05, 0.30, 50)
-                fake_returns = np.log(fake_risks * 10) * 0.10 + 0.05
+                all_points = resultat.get("all_front", [])
+                x_risk = [p["metrics"]["volatility"] for p in all_points]
+                y_ret = [p["metrics"]["expected_return"] for p in all_points]
 
-                fig_pareto = px.scatter(
-                    x=fake_risks,
-                    y=fake_returns,
-                    labels={"x": "Risque (Volatilité)", "y": "Rendement Espéré"},
-                    title="Frontière Efficiente (Théorique)",
-                )
+                chosen_risk = resultat["metrics"]["volatility"]
+                chosen_ret = resultat["metrics"]["expected_return"]
 
+                fig_pareto = go.Figure()
+
+                # Nuage de points
                 fig_pareto.add_trace(
                     go.Scatter(
-                        x=[metrics["volatility"]],
-                        y=[metrics["expected_return"]],
-                        mode="markers+text",
-                        marker=dict(color="red", size=15, symbol="star"),
-                        name="Portefeuille Sélectionné",
-                        text=["Votre Portefeuille"],
-                        textposition="top center",
+                        x=x_risk,
+                        y=y_ret,
+                        mode="markers",
+                        name="Solutions NSGA-II",
+                        marker=dict(color="blue", opacity=0.5),
                     )
                 )
+
+                # Point sélectionné
+                fig_pareto.add_trace(
+                    go.Scatter(
+                        x=[chosen_risk],
+                        y=[chosen_ret],
+                        mode="markers+text",
+                        name="Sélectionné",
+                        text=["Votre Choix"],
+                        textposition="top center",
+                        marker=dict(color="red", size=15, symbol="star"),
+                    )
+                )
+
+                fig_pareto.update_layout(
+                    xaxis_title="Risque (Volatilité)",
+                    yaxis_title="Rendement Espéré",
+                )
+
                 st.plotly_chart(fig_pareto, width="stretch")
-            else:
-                st.error("L'optimisation à échoué. Essayez d'assouplir les contraintes")
-    elif not selected_assets:
-        st.info("Sélectionnez des actifs pour commencer.")
-    else:
-        st.info("Cliquez sur 'Lancer l'optimisation' dans la barre latérale.")
 
 with tab3:
     st.markdown("""
