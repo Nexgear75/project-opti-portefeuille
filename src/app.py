@@ -7,29 +7,25 @@ import os
 import sys
 import random
 
-
-# Gestion des imports dans les autres fichiers
+# Import des fichiers python
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 sys.path.append(root_dir)
-
-try:
-    from scripts.utils.load_data import get_data
-    from scripts.main import use_alg_ngsa2
-    from scripts.algo.process_param import process_param
-except ImportError as e:
-    st.error(f"Erreur d'import : {e}")
-    st.stop()
-
-# Configuration de la page
 
 st.set_page_config(
     page_title="Optimisateur de Portefeuille", page_icon="📈", layout="wide"
 )
 
+try:
+    from scripts.utils.load_data import get_data
+    from scripts.main import use_alg
+    from scripts.algo.process_param import process_param
+except ImportError as e:
+    st.error(f"Erreur d'import : {e}")
+    st.stop()
+
+
 # Chargement des données
-
-
 @st.cache_data
 def load_data():
     return get_data("data")
@@ -43,19 +39,28 @@ except Exception as e:
     st.stop()
 
 
-def run_real_optimization(prices_df, r_min_target):
+# Fonction d'optimisation
+def run_real_optimization(prices_df, r_min_target, algo_choice_user):
     """
-    ADAPTATEUR : Connecte l'algo NSGA-II de ton collègue à l'interface Streamlit.
+    Connecte l'interface Streamlit à l'algorithme choisi (NSGA-II ou Génétique).
     """
     mu, sigma, N = process_param(prices_df)
 
+    if algo_choice_user == "NSGA-II":
+        internal_algo_name = "ngsa2"
+    else:
+        internal_algo_name = "gen"
+
     try:
-        raw_results = use_alg_ngsa2(dim=3, trace=False)
+        raw_results = use_alg(dim=3, trace=True, algo=internal_algo_name)
     except Exception as e:
-        st.error(f"Erreur dans l'algo NSGA-II : {e}")
+        st.error(f"Erreur lors de l'exécution de l'algo {internal_algo_name} : {e}")
         return {"status": False}
 
     processed_candidates = []
+
+    if not raw_results:
+        return {"status": False}
 
     for item in raw_results:
         weights_dict = item["weights"]
@@ -65,7 +70,6 @@ def run_real_optimization(prices_df, r_min_target):
         total_sum = np.sum(w_vec)
         if total_sum > 0:
             w_vec = w_vec / total_sum
-
             weights_dict = {
                 col: val for col, val in zip(prices_df.columns, w_vec) if val > 0
             }
@@ -93,7 +97,7 @@ def run_real_optimization(prices_df, r_min_target):
             processed_candidates, key=lambda x: x["metrics"]["expected_return"]
         )
         st.warning(
-            f"Attention : L'algorithme n'a pas trouvé de solution atteignant {r_min_target:.1%}. Voici la meilleure solution disponible."
+            f"Attention : L'algorithme {algo_choice_user} n'a pas trouvé de solution atteignant {r_min_target:.1%}. Voici la meilleure solution disponible."
         )
 
     return {
@@ -116,8 +120,8 @@ def generate_random_portfolio():
     """Génère une sélection diversifiée de 10 à 20 actifs"""
     target_size = random.randint(10, 20)
     new_selection = []
-
     sectors_dict = {}
+
     for ticker in all_tickers:
         sec = sector_map.get(ticker, "Unknown")
         if sec not in sectors_dict:
@@ -149,8 +153,15 @@ selected_assets = st.sidebar.multiselect(
     help="Utilisez le bouton ci-dessus pour générer un panier varié.",
 )
 
+algo_choice = st.sidebar.radio(
+    "2. Choix de l'Algorithme",
+    options=["NSGA-II", "Algorithme Génétique"],
+    index=0,
+    help="NSGA-II est multi-objectifs. L'algo génétique standard est plus simple.",
+)
+
 r_min_input = st.sidebar.slider(
-    "2. Rendement Annuel Minimal visé (%)",
+    "3. Rendement Annuel Minimal visé (%)",
     min_value=0.0,
     max_value=30.0,
     value=10.0,
@@ -159,13 +170,10 @@ r_min_input = st.sidebar.slider(
 r_min_val = r_min_input / 100.0
 
 st.sidebar.divider()
-
 run_btn = st.sidebar.button("Lancer l'Optimisation", type="primary")
 
-# Page principale
 st.title("Dashboard d'Optimisation de Portefeuille")
 
-# Création des onglets
 tab1, tab2, tab3 = st.tabs(
     ["Analyse de Marché", "Portefeuille Optimal", "Détails du Projet"]
 )
@@ -175,28 +183,23 @@ with tab1:
     if selected_assets:
         subset = prices_df[selected_assets]
         normalized_df = subset / subset.iloc[0] * 100
-
         st.line_chart(normalized_df)
-
         with st.expander("Voir les données brutes"):
             st.dataframe(subset.tail(10))
-
     else:
         st.info("Veuillez sélectionner des actifs dans la barre latérale.")
 
 with tab2:
     if run_btn and selected_assets:
-        with st.spinner(
-            "Optimisation NSGA-II en cours (cela peut prendre du temps)..."
-        ):
+        with st.spinner(f"Optimisation avec {algo_choice} en cours..."):
             subset_df = prices_df[selected_assets]
 
-            resultat = run_real_optimization(subset_df, r_min_val)
+            resultat = run_real_optimization(subset_df, r_min_val, algo_choice)
 
             if resultat["status"]:
                 metrics = resultat["metrics"]
-                col1, col2, col3 = st.columns(3)
 
+                col1, col2, col3 = st.columns(3)
                 col1.metric("Rendement Espéré", f"{metrics['expected_return']:.2%}")
                 col2.metric("Risque (Volatilité)", f"{metrics['volatility']:.2%}")
                 sharpe = (
@@ -212,14 +215,11 @@ with tab2:
 
                 with col_chart:
                     st.subheader("Allocation Sectorielle & Actifs")
-
                     weights_data = resultat["weights"]
                     df_weights = pd.DataFrame(
                         list(weights_data.items()), columns=["Ticker", "Poids"]
                     )
-
                     df_weights["Secteur"] = df_weights["Ticker"].map(sector_map)
-
                     df_weights = df_weights[df_weights["Poids"] > 0.001]
 
                     fig_sun = px.sunburst(
@@ -227,7 +227,7 @@ with tab2:
                         path=["Secteur", "Ticker"],
                         values="Poids",
                         color="Secteur",
-                        title="Répartition Macro-économique",
+                        title=f"Répartition ({algo_choice})",
                     )
                     st.plotly_chart(fig_sun, width="stretch")
 
@@ -242,7 +242,7 @@ with tab2:
                     )
 
                 st.divider()
-                st.subheader("Frontière de Pareto (Résultats de l'Algo)")
+                st.subheader(f"Frontière de Pareto ({algo_choice})")
 
                 all_points = resultat.get("all_front", [])
                 x_risk = [p["metrics"]["volatility"] for p in all_points]
@@ -253,18 +253,16 @@ with tab2:
 
                 fig_pareto = go.Figure()
 
-                # Nuage de points
                 fig_pareto.add_trace(
                     go.Scatter(
                         x=x_risk,
                         y=y_ret,
                         mode="markers",
-                        name="Solutions NSGA-II",
+                        name="Solutions Trouvées",
                         marker=dict(color="blue", opacity=0.5),
                     )
                 )
 
-                # Point sélectionné
                 fig_pareto.add_trace(
                     go.Scatter(
                         x=[chosen_risk],
@@ -274,6 +272,7 @@ with tab2:
                         text=["Votre Choix"],
                         textposition="top center",
                         marker=dict(color="red", size=15, symbol="star"),
+                        showlegend=False,
                     )
                 )
 
@@ -283,13 +282,17 @@ with tab2:
                 )
 
                 st.plotly_chart(fig_pareto, width="stretch")
+            else:
+                st.error("L'optimisation a échoué. Vérifiez la console.")
 
 with tab3:
     st.markdown("""
-    Ce dashboard implémente une optimisation de portefeuille multi-critère basée sur :
-    1. **Modèle de Markowitz (Moyenne-Variance)** pour le niveau 1.
-    2. **Algorithme NSGA-II** pour l'intégration des coûts de transaction (Niveau 2).
+    Ce dashboard implémente une optimisation de portefeuille multi-critère.
     
-    ### Sources de Données
+    ### Algorithmes disponibles
+    1. **NSGA-II** : Optimisation Multi-Objectifs (Risque, Rendement, Coûts) générant une frontière de Pareto.
+    2. **Algorithme Génétique** : Approche alternative standard.
+    
+    ### Données
     Les données proviennent des constituants du S&P 500 classés par secteurs GICS.
     """)
