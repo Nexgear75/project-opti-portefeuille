@@ -11,6 +11,7 @@ from scripts.algo.genetic.gen_alg import gen_alg_2dim, gen_alg_3dim
 from scripts.algo.ngsa2 import alg_ngsa2
 from scripts.algo.process_param import process_param
 from scripts.utils.load_data import get_data
+from scripts.algo.get_pareto import get_pareto
 
 
 def use_alg(algo = "gen",dim = 2,trace = False):
@@ -51,11 +52,14 @@ def use_alg(algo = "gen",dim = 2,trace = False):
         # except:
         print("something went rong with the genetic algo")
     if trace:
+        print(len(selection)," elements selected")
+        print("processing pareto front")
+    selection = get_pareto(selection,mu,sigma,dim)
+    if trace:
+        print(len(selection)," pereto optimal elements")
         print("preparing the result to send")
     result = []
     for obj in selection:
-        if trace:
-            print("    item preparing")
         obj_result = {}
         obj_result["status"] = True
         obj_result["weights"] = {}
@@ -67,8 +71,6 @@ def use_alg(algo = "gen",dim = 2,trace = False):
         result.append(obj_result)
     return result
 
-ttt = {"A":1,"B":2}
-print(max(ttt,key=ttt.get))
 result = []
 result.append(use_alg(algo = "gen", dim = 2, trace = True))
 result.append(use_alg(algo = "gen", dim = 3, trace = True))
